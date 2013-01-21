@@ -187,37 +187,6 @@ public class GUI extends java.awt.Frame {
     }
 
     /**
-     * Simple implementation of Curve specifying an ellipse.
-     */
-    public static class SimpleCurve implements Curve {
-
-        @Override
-        public Vector getPoint(double t) {
-            double x, y, z; // x,y,z coordinates as defined in the assignment
-            x = 10 * cos(2 * PI * t);
-            y = 14 * sin(2 * PI * t);
-            z = 1;
-            return new Vector(x, y, z);
-        }
-
-        @Override
-        public Vector getTangent(double t) {
-            double x, y, z; // x,y,z coordinates as defined in the assignment
-            x = -20 * PI * sin(2 * PI * t);
-            y = 28 * PI * cos(2 * PI * t);
-            z = 0;
-            return new Vector(x, y, z);
-        }
-
-        @Override
-        public Vector getNormalVector(double t) {
-            Vector tangent = this.getTangent(t);
-            // Rotate 90 degrees in negative direction (outward) in XOY plane.
-            return new Vector(tangent.y(), -tangent.x(), 0);
-        }
-    }
-
-    /**
      * Implementation of Curve that models a Bezier curve.
      *
      * This class will use N control points to model Bezier segments. Each
@@ -237,67 +206,7 @@ public class GUI extends java.awt.Frame {
 
         final private Vector[] P; // control points defining Bezier segments
         int N; // the number of segments
-        // Bezier curve resembling the letter O.
-        final static public BezierCurve O = new BezierCurve(
-                new Vector(-10, 0, 1),
-                new Vector(-10, 10, 1),
-                new Vector(10, 10, 1),
-                new Vector(10, 0, 1),
-                new Vector(10, -10, 1),
-                new Vector(-10, -10, 1),
-                new Vector(-10, 0, 1));
-        // Bezier curve resembling the letter D.
-        final static public BezierCurve D = new BezierCurve(
-                new Vector(-7, -10, 1),
-                new Vector(-7, -5, 1),
-                new Vector(-7, 5, 1),
-                new Vector(-7, 10, 1),
-                new Vector(-7, 12, 1),
-                new Vector(-5, 15, 1),
-                new Vector(3, 11, 1),
-                new Vector(9, 7, 1),
-                new Vector(9, -13, 1),
-                new Vector(3, -14, 1),
-                new Vector(-5, -15, 1),
-                new Vector(-7, -12, 1),
-                new Vector(-7, -10, 1));
-        // Bezier curve resembling the letter L.
-        final static public BezierCurve L = new BezierCurve(
-                new Vector(4, -11, 1),
-                new Vector(20 / 3, -11, 1),
-                new Vector(28 / 3, -11, 1),
-                new Vector(12, -11, 1),
-                new Vector(13, -11, 1),
-                new Vector(13, -12, 1),
-                new Vector(12, -12, 1),
-                new Vector(8, -12, 1),
-                new Vector(4, -12, 1),
-                new Vector(-9, -12, 1),
-                new Vector(-13, -12, 1),
-                new Vector(-13, -12, 1),
-                new Vector(-13, 1, 1),
-                new Vector(-13, 5, 1),
-                new Vector(-13, 9, 1),
-                new Vector(-13, 13, 1),
-                new Vector(-13, 14, 1),
-                new Vector(-12, 14, 1),
-                new Vector(-12, 13, 1),
-                new Vector(-12, 10, 1),
-                new Vector(-12, 8, 1),
-                new Vector(-12, 5, 1),
-                new Vector(-12, -11, 1),
-                new Vector(-12, -11, 1),
-                new Vector(4, -11, 1));
-        // Customly defined Bezier curve.
-        final static public BezierCurve custom = new BezierCurve(
-                new Vector(-10, 0, 1),
-                new Vector(-10, 10, 5),
-                new Vector(10, 10, 1),
-                new Vector(10, 0, 5),
-                new Vector(10, -10, 9),
-                new Vector(-10, -10, -3),
-                new Vector(-10, 0, 1));
-
+        
         /**
          * Constructs a Bezier curve from the specified control points.
          *
