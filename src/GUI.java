@@ -19,6 +19,7 @@ public class GUI extends java.awt.Frame {
     ArrayList<Vector> points = new ArrayList<>();
     Set<PointView> views = new HashSet();
     Curve c;
+    Vector dragPoint;
 
     /**
      * Creates new form NewFrame
@@ -50,9 +51,22 @@ public class GUI extends java.awt.Frame {
             }
         });
 
+        jPanel1.setMinimumSize(new java.awt.Dimension(800, 800));
+        jPanel1.setName(""); // NOI18N
         jPanel1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jPanel1MousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                jPanel1MouseReleased(evt);
+            }
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jPanel1MouseClicked(evt);
+            }
+        });
+        jPanel1.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseDragged(java.awt.event.MouseEvent evt) {
+                jPanel1MouseDragged(evt);
             }
         });
         add(jPanel1, java.awt.BorderLayout.CENTER);
@@ -70,18 +84,44 @@ public class GUI extends java.awt.Frame {
     private void jPanel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel1MouseClicked
         PointView hit = null;
         for (PointView view : views) {
-            if (view.click(evt)) {
+            if (view.click(evt.getPoint())) {
                 hit = view;
             }
         }
         if (hit == null) {
-            addPoint(evt.getPoint());
+            if (evt.getButton() == MouseEvent.BUTTON1) {
+                addPoint(evt.getPoint());
+            }
         } else {
-            // do nothing for now
-            System.out.println("Clicked " + hit);
+            if (evt.getButton() == MouseEvent.BUTTON3) {
+                removePoint(hit);
+            }
         }
         repaint();
     }//GEN-LAST:event_jPanel1MouseClicked
+
+    private void jPanel1MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel1MousePressed
+        PointView hit = null;
+        for (PointView view : views) {
+            if (view.click(evt.getPoint())) {
+                hit = view;
+            }
+        }
+        if (hit != null) {
+            dragPoint = hit.point;
+        }
+    }//GEN-LAST:event_jPanel1MousePressed
+
+    private void jPanel1MouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel1MouseDragged
+        if (dragPoint != null) {
+            dragPoint.replace(new Vector(evt.getPoint()));
+            repaint();
+        }
+    }//GEN-LAST:event_jPanel1MouseDragged
+
+    private void jPanel1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel1MouseReleased
+        this.dragPoint = null;
+    }//GEN-LAST:event_jPanel1MouseReleased
 
     private void paintMainPanel(JPanel panel, Graphics g) {
         for (Vector p : points) {
@@ -105,6 +145,14 @@ public class GUI extends java.awt.Frame {
             c = new BezierCurve(points.toArray(new Vector[0]));
         }
         views.add(new PointView(v));
+    }
+
+    private void removePoint(PointView view) {
+        points.remove(view.point);
+        views.remove(view);
+        if (points.size() <= 3) {
+            c = null;
+        }
     }
 
     /**
@@ -379,7 +427,7 @@ public class GUI extends java.awt.Frame {
         private Vector subtract(Vector that) {
             return this.add(that.scale(-1));
         }
-        
+
         @Override
         public String toString() {
             String result = "(";
@@ -389,23 +437,27 @@ public class GUI extends java.awt.Frame {
             result = result.concat(coordinates[coordinates.length - 1] + ")");
             return result;
         }
+
+        public void replace(Vector v) {
+            this.coordinates = v.coordinates;
+        }
     }
 
     public class PointView {
 
         Vector point;
         final double eps = 5;
-        
+
         public PointView(Vector point) {
             this.point = point;
         }
 
-        public boolean click(MouseEvent evt) {
-            int x = evt.getX();
-            int y = evt.getY();
+        public boolean click(Point clickPoint) {
+            int x = clickPoint.x;
+            int y = clickPoint.y;
             return (abs(point.x() - x) < eps) && (abs(point.y() - y) < eps);
         }
-        
+
         @Override
         public String toString() {
             return point.toString();
