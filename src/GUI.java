@@ -2,9 +2,12 @@
 import java.awt.Graphics;
 import java.awt.List;
 import java.awt.Point;
+import java.awt.event.MouseEvent;
 import javax.swing.JPanel;
 import static java.lang.Math.*;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Simple graphical application to draw a Bezier curve.
@@ -14,6 +17,7 @@ import java.util.ArrayList;
 public class GUI extends java.awt.Frame {
 
     ArrayList<Vector> points = new ArrayList<>();
+    Set<PointView> views = new HashSet();
     Curve c;
 
     /**
@@ -64,27 +68,45 @@ public class GUI extends java.awt.Frame {
     }//GEN-LAST:event_exitForm
 
     private void jPanel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel1MouseClicked
-        points.add(new Vector(evt.getPoint()));
-        if (points.size() > 3) {
-            c = new BezierCurve(points.toArray(new Vector[0]));
+        PointView hit = null;
+        for (PointView view : views) {
+            if (view.click(evt)) {
+                hit = view;
+            }
+        }
+        if (hit == null) {
+            addPoint(evt.getPoint());
+        } else {
+            // do nothing for now
+            System.out.println("Clicked " + hit);
         }
         repaint();
     }//GEN-LAST:event_jPanel1MouseClicked
 
     private void paintMainPanel(JPanel panel, Graphics g) {
         for (Vector p : points) {
-            g.drawOval((int)p.x(), (int)p.y(), 1,1);
+            g.drawOval((int) p.x(), (int) p.y(), 1, 1);
         }
-        if (c!=null) {
-        final int N = 1000;
-        Vector from, to;
-        for (int i = 0; i < N-1; i++) {
-            from = c.getPoint((double)i/N);
-            to = c.getPoint((double)(i+1)/N);
-            g.drawLine((int)from.x(), (int)from.y(), (int)to.x(), (int)to.y());
-        }}
+        if (c != null) {
+            final int N = 1000;
+            Vector from, to;
+            for (int i = 0; i < N - 1; i++) {
+                from = c.getPoint((double) i / N);
+                to = c.getPoint((double) (i + 1) / N);
+                g.drawLine((int) from.x(), (int) from.y(), (int) to.x(), (int) to.y());
+            }
+        }
     }
-    
+
+    private void addPoint(Point point) {
+        Vector v = new Vector(point);
+        points.add(v);
+        if (points.size() > 3) {
+            c = new BezierCurve(points.toArray(new Vector[0]));
+        }
+        views.add(new PointView(v));
+    }
+
     /**
      * Interface that represents a curve.
      */
@@ -307,10 +329,11 @@ public class GUI extends java.awt.Frame {
                     P3.subtract(P2).scale(pow(t, 2))).scale(3);
         }
     }
-    
+
     public static class Vector {
+
         private double[] coordinates;
-        
+
         public Vector(double... coordinates) {
             this.coordinates = coordinates;
         }
@@ -320,19 +343,19 @@ public class GUI extends java.awt.Frame {
             this.coordinates[0] = point.x;
             this.coordinates[1] = point.y;
         }
-        
+
         public double x() {
             return coordinates[0];
         }
-        
+
         public double y() {
             return coordinates[1];
         }
-        
+
         public double z() {
             return coordinates[2];
         }
-        
+
         public double getCoordinate(int i) {
             return coordinates[i];
         }
@@ -352,9 +375,40 @@ public class GUI extends java.awt.Frame {
             }
             return new Vector(result);
         }
-        
+
         private Vector subtract(Vector that) {
             return this.add(that.scale(-1));
+        }
+        
+        @Override
+        public String toString() {
+            String result = "(";
+            for (int i = 0; i < coordinates.length - 1; i++) {
+                result = result.concat(coordinates[i] + ", ");
+            }
+            result = result.concat(coordinates[coordinates.length - 1] + ")");
+            return result;
+        }
+    }
+
+    public class PointView {
+
+        Vector point;
+        final double eps = 5;
+        
+        public PointView(Vector point) {
+            this.point = point;
+        }
+
+        public boolean click(MouseEvent evt) {
+            int x = evt.getX();
+            int y = evt.getY();
+            return (abs(point.x() - x) < eps) && (abs(point.y() - y) < eps);
+        }
+        
+        @Override
+        public String toString() {
+            return point.toString();
         }
     }
 
