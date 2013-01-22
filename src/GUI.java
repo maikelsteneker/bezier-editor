@@ -1,13 +1,12 @@
 
 import java.awt.Graphics;
-import java.awt.List;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
-import javax.swing.JPanel;
 import static java.lang.Math.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.JPanel;
 
 /**
  * Simple graphical application to draw a Bezier curve.
@@ -43,14 +42,17 @@ public class GUI extends java.awt.Frame {
                 paintMainPanel(this, g);
             }
         };
+        jCheckBox1 = new javax.swing.JCheckBox();
 
         setMinimumSize(new java.awt.Dimension(100, 100));
+        setPreferredSize(new java.awt.Dimension(800, 800));
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 exitForm(evt);
             }
         });
 
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setMinimumSize(new java.awt.Dimension(800, 800));
         jPanel1.setName(""); // NOI18N
         jPanel1.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -69,6 +71,10 @@ public class GUI extends java.awt.Frame {
                 jPanel1MouseDragged(evt);
             }
         });
+
+        jCheckBox1.setText("drag lock");
+        jPanel1.add(jCheckBox1);
+
         add(jPanel1, java.awt.BorderLayout.CENTER);
 
         pack();
@@ -114,7 +120,26 @@ public class GUI extends java.awt.Frame {
 
     private void jPanel1MouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel1MouseDragged
         if (dragPoint != null) {
-            dragPoint.replace(new Vector(evt.getPoint()));
+            if (this.jCheckBox1.isSelected()) {
+                Vector beforeDragPoint = null;
+                for (int i = 0; i < points.size(); i++) {
+                    if (points.get(i) == dragPoint && i > 0) {
+                        beforeDragPoint = points.get(i-1);
+                    }
+                }
+                
+                if (beforeDragPoint != null) {
+                    Vector dir = dragPoint.subtract(beforeDragPoint);
+                    double ratio = dir.y() / dir.x();
+                    int x = evt.getX();
+                    int y = (int) (ratio * x);
+                    System.out.println("x" + x);
+                    System.out.println("y" + y);
+                    System.out.println("ratio:" + ratio);
+                    dragPoint.replace(new Vector(x,y));
+                }
+            } else {
+            dragPoint.replace(new Vector(evt.getPoint()));}
             repaint();
         }
     }//GEN-LAST:event_jPanel1MouseDragged
@@ -385,6 +410,7 @@ public class GUI extends java.awt.Frame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 }
