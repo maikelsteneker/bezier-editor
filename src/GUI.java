@@ -44,6 +44,7 @@ public class GUI extends java.awt.Frame {
             }
         };
         jCheckBox1 = new javax.swing.JCheckBox();
+        jButton1 = new javax.swing.JButton();
 
         setMinimumSize(new java.awt.Dimension(100, 100));
         setPreferredSize(new java.awt.Dimension(800, 800));
@@ -75,6 +76,14 @@ public class GUI extends java.awt.Frame {
 
         jCheckBox1.setText("drag lock");
         jPanel1.add(jCheckBox1);
+
+        jButton1.setText("reset");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        jPanel1.add(jButton1);
 
         add(jPanel1, java.awt.BorderLayout.CENTER);
 
@@ -149,6 +158,14 @@ public class GUI extends java.awt.Frame {
     private void jPanel1MouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel1MouseReleased
         this.dragPoint = null;
     }//GEN-LAST:event_jPanel1MouseReleased
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        points = new ArrayList<>();
+        views = new HashSet();
+        c = null;
+        dragPoint = null;
+        repaint();
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     private void paintMainPanel(JPanel panel, Graphics g) {
         for (Vector p : points) {
@@ -464,6 +481,7 @@ public class GUI extends java.awt.Frame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButton1;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
