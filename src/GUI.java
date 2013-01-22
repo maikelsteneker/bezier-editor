@@ -19,6 +19,7 @@ public class GUI extends java.awt.Frame {
     Set<PointView> views = new HashSet();
     Curve c;
     Vector dragPoint;
+    final static private boolean CUBIC = false; // true if using cubic spline
 
     /**
      * Creates new form NewFrame
@@ -124,10 +125,10 @@ public class GUI extends java.awt.Frame {
                 Vector beforeDragPoint = null;
                 for (int i = 0; i < points.size(); i++) {
                     if (points.get(i) == dragPoint && i > 0) {
-                        beforeDragPoint = points.get(i-1);
+                        beforeDragPoint = points.get(i - 1);
                     }
                 }
-                
+
                 if (beforeDragPoint != null) {
                     Vector dir = dragPoint.subtract(beforeDragPoint);
                     double ratio = dir.y() / dir.x();
@@ -136,10 +137,11 @@ public class GUI extends java.awt.Frame {
                     System.out.println("x" + x);
                     System.out.println("y" + y);
                     System.out.println("ratio:" + ratio);
-                    dragPoint.replace(new Vector(x,y));
+                    dragPoint.replace(new Vector(x, y));
                 }
             } else {
-            dragPoint.replace(new Vector(evt.getPoint()));}
+                dragPoint.replace(new Vector(evt.getPoint()));
+            }
             repaint();
         }
     }//GEN-LAST:event_jPanel1MouseDragged
@@ -166,8 +168,9 @@ public class GUI extends java.awt.Frame {
     private void addPoint(Point point) {
         Vector v = new Vector(point);
         points.add(v);
-        if (points.size() > 3) {
-            c = new BezierCurve(points.toArray(new Vector[0]));
+        if (points.size() > (CUBIC ? 3 : 2)) {
+            c = CUBIC ? new CubicBezierCurve(points.toArray(new Vector[0]))
+                    : new QuadraticBezierCurve(points.toArray(new Vector[0]));
         }
         views.add(new PointView(v));
     }
@@ -175,7 +178,7 @@ public class GUI extends java.awt.Frame {
     private void removePoint(PointView view) {
         points.remove(view.point);
         views.remove(view);
-        if (points.size() <= 3) {
+        if (points.size() <= (CUBIC ? 3 : 2)) {
             c = null;
         }
     }
@@ -227,17 +230,17 @@ public class GUI extends java.awt.Frame {
      * points are specified, the first four will be used to form a segment and
      * the last will be ignored.
      */
-    public static class BezierCurve implements Curve {
+    public static class CubicBezierCurve implements Curve {
 
         final private Vector[] P; // control points defining Bezier segments
         int N; // the number of segments
-        
+
         /**
          * Constructs a Bezier curve from the specified control points.
          *
          * @param points control points
          */
-        public BezierCurve(Vector... points) {
+        public CubicBezierCurve(Vector... points) {
             this.P = points;
             N = (points.length - 1) / 3;
         }
@@ -309,6 +312,57 @@ public class GUI extends java.awt.Frame {
             return P1.subtract(P0).scale(pow(1 - t, 2)).add(
                     P2.subtract(P1).scale(2 * t * (1 - t))).add(
                     P3.subtract(P2).scale(pow(t, 2))).scale(3);
+        }
+    }
+
+    public static class QuadraticBezierCurve implements Curve {
+
+        final private Vector[] P; // control points defining Bezier segments
+        int N; // the number of segments
+
+        /**
+         * Constructs a Bezier curve from the specified control points.
+         *
+         * @param points control points
+         */
+        public QuadraticBezierCurve(Vector... points) {
+            this.P = points;
+            N = (points.length - 1) / 2;
+        }
+
+        @Override
+        public Vector getPoint(double t) {
+            t = t % 1; // normalize t to range [0,1]
+            /*
+             * For each segment, we need to find a value to fill into
+             * the function. For this, we simply multiply by the number of
+             * segments, and then normalize. This is a way to cover all segments.
+             */
+            double s = (t * N) % 1; // value to fill into the Bezier function
+            /*
+             * From t, we can derive in which segment the point should lie.
+             * For this, we simply multiply by the number of segments and then
+             * round half down.
+             */
+            int i = 2 * (int) (t * N); // the first point of the segment
+            return getQuadraticBezierPnt(s, P[i], P[i + 1], P[i + 2]);
+        }
+
+        @Override
+        public Vector getTangent(double t) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Vector getNormalVector(double t) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public static Vector getQuadraticBezierPnt(double t, Vector P0,
+                Vector P1, Vector P2) {
+            return P0.scale(pow(1 - t, 2)).add(
+                    P1.scale(2 * (1 - t) * t)).add(
+                    P2.scale(pow(t, 2)));
         }
     }
 
